@@ -373,7 +373,7 @@ async def iniciar_cliente():
 
 # ✅ FINAL DEFINITIVO
 
-if _name_ == "_main_":
+if __name__ == "__main__":
 
     while True:
 
