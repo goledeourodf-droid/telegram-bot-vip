@@ -30,6 +30,8 @@ canal_publico = -1003768135396
 
 paste_ee_api_key = "ayYqXBwrZ5cpGh25NTqgpAjAmEt5TlMsupvniX28Z"
 
+bot_token_publico = "8602342926:AAGKPRpjRmY_XDWxU_AhIZLtWDCgsC4aBqc"
+
 palavras_hotmail = [r"HOTMA!LS", r"HOT", r"MICROSOFT"]
 palavras_mix = [r"M!X", r"MIX"]
 
@@ -158,6 +160,8 @@ async def handler(event):
         if tipo == "OUTROS":
             return
 
+        # REMOVER 25 LINHAS DO NOVO CANAL
+
         if event.chat_id == -1003751501506:
 
             linhas = [mensagem_premium+"\n"] + linhas[25:]
@@ -175,6 +179,8 @@ async def handler(event):
         with open(novo,"w",encoding="utf-8") as f:
             f.writelines(linhas)
 
+        # ENVIO VIP
+
         await client.send_file(
             canal_destino,
             novo
@@ -182,9 +188,35 @@ async def handler(event):
 
         print("Enviado VIP:", nome_novo)
 
+        # AVISO IMEDIATO PUBLICO
+
+        aviso = f"""🟢 NEW VIP UPLOAD DETECTED
+
+📄 FILE: {nome_novo}
+
+💻 VIP ACCESS PLANS:
+
+🟢 1 Week  : 12$
+🟢 2 Weeks : 25$
+🟢 1 Month : 35$
+
+📩 Contact:
+@LpbCloud
+"""
+
+        requests.post(
+            f"https://api.telegram.org/bot{bot_token_publico}/sendMessage",
+            json={
+                "chat_id": canal_publico,
+                "text": aviso
+            }
+        )
+
+        print("Aviso imediato enviado")
+
         os.remove(novo)
 
-        # PUBLICO COM DELAY
+        # DELAY PUBLICO
 
         async def publico():
 
@@ -197,6 +229,8 @@ async def handler(event):
             if link:
 
                 print("Link:", link)
+
+                print("Aguardando 30 minutos...")
 
                 await asyncio.sleep(1800)
 
@@ -213,7 +247,7 @@ TYPE: {tipo}
 """
 
                 requests.post(
-                    f"https://api.telegram.org/bot8602342926:AAGKPRpjRmY_XDWxU_AhIZLtWDCgsC4aBqc/sendMessage",
+                    f"https://api.telegram.org/bot{bot_token_publico}/sendMessage",
                     json={
                         "chat_id": canal_publico,
                         "text": msg,
@@ -228,6 +262,8 @@ TYPE: {tipo}
                     }
                 )
 
+                print("Mensagem publica enviada")
+
         asyncio.create_task(publico())
 
     except Exception as e:
@@ -235,7 +271,7 @@ TYPE: {tipo}
         print("Erro handler:", e)
 
 # =========================
-# START SIMPLES
+# START
 # =========================
 
 async def main():
