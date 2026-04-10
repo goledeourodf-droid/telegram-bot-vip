@@ -362,7 +362,7 @@ async def iniciar_cliente():
 
             print("Conectando ao Telegram...")
 
-            await client.start()
+            await client.start(bot_token=bot_token)
 
             print("Rodando...")
 
