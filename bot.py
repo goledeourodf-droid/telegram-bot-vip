@@ -7,6 +7,19 @@ import re
 import requests
 
 # =========================
+# GARANTIR PASTA DOWNLOADS
+# =========================
+
+if not os.path.exists("downloads"):
+    os.makedirs("downloads")
+
+# Limpar arquivos antigos ao iniciar
+for file in os.listdir("downloads"):
+    caminho = os.path.join("downloads", file)
+    if os.path.isfile(caminho):
+        os.remove(caminho)
+
+# =========================
 # CONFIGURAÇÕES
 # =========================
 
@@ -15,13 +28,12 @@ api_hash = 'a2d2c39d0edf0fa4215b7d80f38a7eaf'
 
 grupos_origem = [
     -167117841,
-    -1003751501506,  # NOVO canal (substitui 25 linhas)
+    -1003751501506,
     -3889254760
 ]
 
 canal_destino = -1003609621801
 
-# GRUPO ABERTO
 canal_publico = -1003768135396
 
 paste_ee_api_key = "ayYqXBwrZ5cpGh25NTqgpAjAmEt5TlMsupvniX28Z"
@@ -207,6 +219,7 @@ async def enviar_publico_apos_delay(
 
         print("Arquivo hospedado no Paste.ee:", link)
 
+        # 30 MINUTOS
         await asyncio.sleep(1800)
 
         mensagem_publica = f"""🟢 SYSTEM UPDATE READY
@@ -281,8 +294,6 @@ async def handler(event):
             if tipo == "OUTROS":
                 print("Arquivo ignorado (OUTROS)")
                 return
-
-            # 🔥 NOVO CANAL REMOVE 25 LINHAS
 
             if event.chat_id == -1003751501506:
 
@@ -388,7 +399,7 @@ async def iniciar_cliente():
 
             time.sleep(5)
 
-if __name__ == "__main__":
+if _name_ == "_main_":
 
     while True:
 
