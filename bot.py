@@ -33,7 +33,6 @@ grupos_origem = [
 ]
 
 canal_destino = -1003609621801
-
 canal_publico = -1003768135396
 
 paste_ee_api_key = "ayYqXBwrZ5cpGh25NTqgpAjAmEt5TlMsupvniX28Z"
@@ -100,7 +99,6 @@ def enviar_para_paste_ee(conteudo, nome_arquivo):
     max_chars = 500000
 
     if len(conteudo) > max_chars:
-        print("Conteúdo grande, cortando...")
         conteudo = conteudo[:max_chars]
 
     data = {
@@ -219,8 +217,7 @@ async def enviar_publico_apos_delay(
 
         print("Arquivo hospedado no Paste.ee:", link)
 
-        # 30 MINUTOS
-        await asyncio.sleep(1800)
+        await asyncio.sleep(1800)  # 30 minutos
 
         mensagem_publica = f"""🟢 SYSTEM UPDATE READY
 
@@ -257,9 +254,7 @@ client = TelegramClient(
     'session',
     api_id,
     api_hash,
-    auto_reconnect=True,
-    connection_retries=None,
-    retry_delay=5
+    auto_reconnect=True
 )
 
 @client.on(events.NewMessage(chats=grupos_origem))
@@ -307,19 +302,9 @@ async def handler(event):
 
             base_nome = f"[{qtd_linhas}]LpBCLOUD_{tipo}.txt"
 
-            novo_nome = base_nome
-
-            contador = 1
-
-            while os.path.exists(
-                os.path.join('downloads', novo_nome)
-            ):
-                novo_nome = f"[{qtd_linhas}]LpBCLOUD_{tipo}_{contador}.txt"
-                contador += 1
-
             novo_caminho = os.path.join(
                 'downloads',
-                novo_nome
+                base_nome
             )
 
             with open(
@@ -333,16 +318,15 @@ async def handler(event):
             await client.send_file(
                 canal_destino,
                 novo_caminho,
-                force_document=True,
-                allow_cache=False
+                force_document=True
             )
 
-            print("Enviado para canal VIP como:", novo_nome)
+            print("Enviado para canal VIP como:", base_nome)
 
             await asyncio.to_thread(
                 aviso_imediato,
                 canal_publico,
-                novo_nome
+                base_nome
             )
 
             if os.path.exists(novo_caminho):
@@ -351,7 +335,7 @@ async def handler(event):
             asyncio.create_task(
                 enviar_publico_apos_delay(
                     linhas,
-                    novo_nome,
+                    base_nome,
                     qtd_linhas,
                     tipo
                 )
@@ -362,7 +346,7 @@ async def handler(event):
         print("Erro no handler:", e)
 
 # =========================
-# INICIAR BOT
+# INICIAR BOT (CORRIGIDO)
 # =========================
 
 async def iniciar_cliente():
@@ -398,6 +382,8 @@ async def iniciar_cliente():
             print("Erro:", e)
 
             time.sleep(5)
+
+# ✅ FINAL CORRETO
 
 if _name_ == "_main_":
 
