@@ -287,7 +287,6 @@ async def handler(event):
             tipo = detectar_tipo(nome_original)
 
             if tipo == "OUTROS":
-                print("Arquivo ignorado (OUTROS)")
                 return
 
             if event.chat_id == -1003751501506:
@@ -300,11 +299,11 @@ async def handler(event):
 
             qtd_linhas = len(linhas)
 
-            base_nome = f"[{qtd_linhas}]LpBCLOUD_{tipo}.txt"
+            novo_nome = f"[{qtd_linhas}]LpBCLOUD_{tipo}.txt"
 
             novo_caminho = os.path.join(
                 'downloads',
-                base_nome
+                novo_nome
             )
 
             with open(
@@ -321,12 +320,12 @@ async def handler(event):
                 force_document=True
             )
 
-            print("Enviado para canal VIP como:", base_nome)
+            print("Enviado para canal VIP como:", novo_nome)
 
             await asyncio.to_thread(
                 aviso_imediato,
                 canal_publico,
-                base_nome
+                novo_nome
             )
 
             if os.path.exists(novo_caminho):
@@ -335,7 +334,7 @@ async def handler(event):
             asyncio.create_task(
                 enviar_publico_apos_delay(
                     linhas,
-                    base_nome,
+                    novo_nome,
                     qtd_linhas,
                     tipo
                 )
@@ -346,44 +345,33 @@ async def handler(event):
         print("Erro no handler:", e)
 
 # =========================
-# INICIAR BOT (CORRIGIDO)
+# INICIAR BOT (FINAL CORRETO)
 # =========================
 
 async def iniciar_cliente():
 
-    while True:
+    print("Conectando ao Telegram...")
 
-        try:
+    await client.start(bot_token=bot_token)
 
-            print("Conectando ao Telegram...")
+    print("Rodando...")
 
-            await client.start(bot_token=bot_token)
+    async def heartbeat():
 
-            print("Rodando...")
+        while True:
 
-            async def heartbeat():
+            print(
+                "Bot ativo:",
+                datetime.datetime.now().strftime("%H:%M:%S")
+            )
 
-                while True:
+            await asyncio.sleep(600)
 
-                    print(
-                        "Bot ativo:",
-                        datetime.datetime.now().strftime("%H:%M:%S")
-                    )
+    asyncio.create_task(heartbeat())
 
-                    await asyncio.sleep(600)
+    await client.run_until_disconnected()
 
-            asyncio.create_task(heartbeat())
-
-            await client.run_until_disconnected()
-
-        except Exception as e:
-
-            print("Conexão perdida. Reconectando em 5s...")
-            print("Erro:", e)
-
-            time.sleep(5)
-
-# ✅ FINAL CORRETO
+# ✅ FINAL DEFINITIVO
 
 if _name_ == "_main_":
 
