@@ -1,26 +1,19 @@
 from telethon import TelegramClient, events
 import asyncio
-import time
 import datetime
 import os
 import re
 import requests
 
 # =========================
-# GARANTIR PASTA DOWNLOADS
+# PASTA DOWNLOADS
 # =========================
 
 if not os.path.exists("downloads"):
     os.makedirs("downloads")
 
-# Limpar arquivos antigos
-for file in os.listdir("downloads"):
-    caminho = os.path.join("downloads", file)
-    if os.path.isfile(caminho):
-        os.remove(caminho)
-
 # =========================
-# CONFIGURAÇÕES
+# CONFIG
 # =========================
 
 api_id = 38493557
@@ -40,180 +33,22 @@ paste_ee_api_key = "ayYqXBwrZ5cpGh25NTqgpAjAmEt5TlMsupvniX28Z"
 palavras_hotmail = [r"HOTMA!LS", r"HOT", r"MICROSOFT"]
 palavras_mix = [r"M!X", r"MIX"]
 
-# =========================
-# MENSAGEM PREMIUM
-# =========================
-
 mensagem_premium = """⚠️ Stop wasting time with weak or reused lines — upgrade to PRIVATE premium data now.
 
 💻 PRIVATE — Premium Access
 
 💲 Pricing Plans:
 
-🟢 3 Days  : 7$ (Trial)
+🟢 3 Days  : 7$
 🟢 1 Week  : 12$
 🟢 2 Weeks : 25$
 🟢 1 Month : 35$
 🟢 3 Months: 70$
-🟢 1 Year  : 200$ ⭐
-
-💳 Payment Method: Crypto Only
-
-📩 Secure your access now:
-@LpbCloud
-"""
-
-# =========================
-# DETECTAR TIPO
-# =========================
-
-def detectar_tipo(nome):
-
-    nome = nome.upper()
-
-    for padrao in palavras_hotmail:
-        if re.search(padrao, nome):
-            return "HOTMAIL"
-
-    for padrao in palavras_mix:
-        if re.search(padrao, nome):
-            return "MIX"
-
-    return "OUTROS"
-
-# =========================
-# PASTEEE
-# =========================
-
-def enviar_para_paste_ee(conteudo, nome_arquivo):
-
-    url = "https://api.paste.ee/v1/pastes"
-
-    headers = {
-        "X-Auth-Token": paste_ee_api_key,
-        "Content-Type": "application/json"
-    }
-
-    max_chars = 500000
-
-    if len(conteudo) > max_chars:
-        conteudo = conteudo[:max_chars]
-
-    data = {
-        "sections": [
-            {
-                "name": nome_arquivo,
-                "syntax": "text",
-                "contents": conteudo
-            }
-        ]
-    }
-
-    try:
-
-        response = requests.post(
-            url,
-            json=data,
-            headers=headers,
-            timeout=60
-        )
-
-        if response.status_code != 201:
-            print("Erro Paste.ee:", response.text)
-            return None
-
-        result = response.json()
-
-        return result["link"]
-
-    except Exception as e:
-
-        print("Erro ao enviar para Paste.ee:", e)
-
-        return None
-
-# =========================
-# AVISO IMEDIATO
-# =========================
-
-def aviso_imediato(nome_arquivo):
-
-    url = f"https://api.telegram.org/bot8602342926:AAGKPRpjRmY_XDWxU_AhIZLtWDCgsC4aBqc/sendMessage"
-
-    texto = f"""🟢 NEW VIP UPLOAD DETECTED
-
-📄 FILE: {nome_arquivo}
-
-💻 VIP ACCESS PLANS:
-
-🟢 1 Week  : 12$
-🟢 2 Weeks : 25$
-🟢 1 Month : 35$
+🟢 1 Year  : 200$
 
 📩 Contact:
 @LpbCloud
 """
-
-    payload = {
-        "chat_id": canal_publico,
-        "text": texto
-    }
-
-    requests.post(url, json=payload)
-
-# =========================
-# DELAY PUBLICO
-# =========================
-
-async def enviar_publico_apos_delay(
-    linhas,
-    nome_arquivo,
-    qtd_linhas,
-    tipo
-):
-
-    link = await asyncio.to_thread(
-        enviar_para_paste_ee,
-        "".join(linhas),
-        nome_arquivo
-    )
-
-    if link:
-
-        print("Arquivo hospedado:", link)
-
-        await asyncio.sleep(1800)
-
-        mensagem = f"""🟢 SYSTEM UPDATE READY
-
-📄 FILE : {nome_arquivo}
-📊 LINES: {qtd_linhas}
-📁 TYPE : {tipo}
-
-🔥 VIP received this before public release
-
-⚠️ This file was released HOURS AGO inside VIP.
-
-📩 JOIN VIP:
-@LpbCloud
-"""
-
-        url = f"https://api.telegram.org/bot8602342926:AAGKPRpjRmY_XDWxU_AhIZLtWDCgsC4aBqc/sendMessage"
-
-        payload = {
-            "chat_id": canal_publico,
-            "text": mensagem,
-            "reply_markup": {
-                "inline_keyboard": [[
-                    {
-                        "text": "🟢 DOWNLOAD FILE",
-                        "url": link
-                    }
-                ]]
-            }
-        }
-
-        requests.post(url, json=payload)
 
 # =========================
 # CLIENT
@@ -225,94 +60,187 @@ client = TelegramClient(
     api_hash
 )
 
+# =========================
+# DETECTAR TIPO
+# =========================
+
+def detectar_tipo(nome):
+
+    nome = nome.upper()
+
+    for p in palavras_hotmail:
+        if re.search(p, nome):
+            return "HOTMAIL"
+
+    for p in palavras_mix:
+        if re.search(p, nome):
+            return "MIX"
+
+    return "OUTROS"
+
+# =========================
+# PASTEEE
+# =========================
+
+def enviar_paste(conteudo, nome):
+
+    url = "https://api.paste.ee/v1/pastes"
+
+    headers = {
+        "X-Auth-Token": paste_ee_api_key,
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "sections": [{
+            "name": nome,
+            "syntax": "text",
+            "contents": conteudo[:500000]
+        }]
+    }
+
+    try:
+
+        r = requests.post(
+            url,
+            json=data,
+            headers=headers,
+            timeout=60
+        )
+
+        if r.status_code == 201:
+            return r.json()["link"]
+
+        print("Erro paste:", r.text)
+
+    except Exception as e:
+
+        print("Erro paste:", e)
+
+    return None
+
+# =========================
+# HANDLER
+# =========================
+
 @client.on(events.NewMessage(chats=grupos_origem))
 async def handler(event):
 
     try:
 
-        if event.file and event.file.name:
+        if not event.file:
+            return
 
-            if not event.file.name.upper().endswith('.TXT'):
-                return
+        if not event.file.name:
+            return
 
-            nome_original = event.file.name.upper()
+        if not event.file.name.upper().endswith(".TXT"):
+            return
 
-            print("Origem:", event.chat_id)
-            print("Arquivo detectado:", nome_original)
+        nome_original = event.file.name.upper()
 
-            caminho = await event.download_media(file='downloads/')
+        print("Origem:", event.chat_id)
+        print("Arquivo:", nome_original)
 
-            with open(
-                caminho,
-                'r',
-                encoding='utf-8',
-                errors='ignore'
-            ) as f:
+        caminho = await event.download_media(file="downloads/")
 
-                linhas = f.readlines()
+        with open(
+            caminho,
+            "r",
+            encoding="utf-8",
+            errors="ignore"
+        ) as f:
 
-            tipo = detectar_tipo(nome_original)
+            linhas = f.readlines()
 
-            if tipo == "OUTROS":
-                return
+        tipo = detectar_tipo(nome_original)
 
-            if event.chat_id == -1003751501506:
+        if tipo == "OUTROS":
+            return
 
-                linhas = [mensagem_premium + "\n"] + linhas[25:]
+        if event.chat_id == -1003751501506:
 
-            else:
+            linhas = [mensagem_premium+"\n"] + linhas[25:]
 
-                linhas = [mensagem_premium + "\n"] + linhas
+        else:
 
-            qtd_linhas = len(linhas)
+            linhas = [mensagem_premium+"\n"] + linhas
 
-            novo_nome = f"[{qtd_linhas}]LpBCLOUD_{tipo}.txt"
+        qtd = len(linhas)
 
-            novo_caminho = os.path.join(
-                'downloads',
-                novo_nome
+        nome_novo = f"[{qtd}]LpBCLOUD_{tipo}.txt"
+
+        novo = os.path.join("downloads", nome_novo)
+
+        with open(novo,"w",encoding="utf-8") as f:
+            f.writelines(linhas)
+
+        await client.send_file(
+            canal_destino,
+            novo
+        )
+
+        print("Enviado VIP:", nome_novo)
+
+        os.remove(novo)
+
+        # PUBLICO COM DELAY
+
+        async def publico():
+
+            link = await asyncio.to_thread(
+                enviar_paste,
+                "".join(linhas),
+                nome_novo
             )
 
-            with open(
-                novo_caminho,
-                'w',
-                encoding='utf-8',
-                errors='ignore'
-            ) as f:
+            if link:
 
-                f.writelines(linhas)
+                print("Link:", link)
 
-            await client.send_file(
-                canal_destino,
-                novo_caminho
-            )
+                await asyncio.sleep(1800)
 
-            print("Enviado VIP:", novo_nome)
+                msg = f"""🟢 SYSTEM READY
 
-            aviso_imediato(novo_nome)
+FILE: {nome_novo}
+LINES: {qtd}
+TYPE: {tipo}
 
-            os.remove(novo_caminho)
+🔥 VIP received this before public release
 
-            asyncio.create_task(
-                enviar_publico_apos_delay(
-                    linhas,
-                    novo_nome,
-                    qtd_linhas,
-                    tipo
+📩 JOIN VIP:
+@LpbCloud
+"""
+
+                requests.post(
+                    f"https://api.telegram.org/bot8602342926:AAGKPRpjRmY_XDWxU_AhIZLtWDCgsC4aBqc/sendMessage",
+                    json={
+                        "chat_id": canal_publico,
+                        "text": msg,
+                        "reply_markup": {
+                            "inline_keyboard":[[
+                                {
+                                    "text":"🟢 DOWNLOAD FILE",
+                                    "url":link
+                                }
+                            ]]
+                        }
+                    }
                 )
-            )
+
+        asyncio.create_task(publico())
 
     except Exception as e:
 
-        print("Erro:", e)
+        print("Erro handler:", e)
 
 # =========================
-# INICIAR CLIENTE
+# START SIMPLES
 # =========================
 
 async def main():
 
-    print("Conectando ao Telegram...")
+    print("Conectando...")
 
     await client.start()
 
@@ -327,22 +255,9 @@ async def main():
 
         await asyncio.sleep(600)
 
-async def run():
+# =========================
+# RUN
+# =========================
 
-    await asyncio.gather(
-        main(),
-        client.run_until_disconnected()
-    )
-
-if __name__ == "__main__":
-
-    while True:
-
-        try:
-
-            asyncio.run(run())
-
-        except Exception as e:
-
-            print("Erro geral:", e)
-            time.sleep(5)
+with client:
+    client.loop.run_until_complete(main())
