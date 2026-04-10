@@ -29,7 +29,7 @@ api_hash = 'a2d2c39d0edf0fa4215b7d80f38a7eaf'
 grupos_origem = [
     -167117841,
     -1003751501506,
-    -3889254760
+    -1003889254760
 ]
 
 canal_destino = -1003609621801
